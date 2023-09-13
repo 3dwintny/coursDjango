@@ -16,11 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from ciangram import views
+from ciangram import views as local_views
+from posts import views as posts_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('hello-word/', views.hello_word),
-    path('sorted/', views.sorted_list),
-    path('hi/<str:name>/<int:age>/', views.say_hi)
+    path('hello-word/', local_views.hello_word),
+    path('sorted/', local_views.sorted_list),
+    path('hi/<str:name>/<int:age>/', local_views.say_hi),
+    # Post Views 
+    path('posts/', posts_views.list_posts),
 ]
