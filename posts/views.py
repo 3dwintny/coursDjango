@@ -1,37 +1,45 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from datetime import datetime
-# Create your views here.
-posts = [
-    {
-        'title':'MontBlank',
-        'user':{
-            'name':'Edwin Tony Mejia',
-            'picture':'https://picsum.photos/200'
-        },
-        'timestamp': datetime.now().strftime('%b %dth, %y - %H:%M hrs'),
-        'photo':'https://picsum.photos/200/300',
-    },
-    {
-        'title':'Via Lactea',
-        'user':{
-            'name':'Vidalia Merari Macario',
-            'picture':'https://picsum.photos/200'
-        },
-        'timestamp': datetime.now().strftime('%b %dth, %y - %H:%M hrs'),
-        'photo':'https://picsum.photos/seed/picsum/200/300',
-    },
-    {
-        'title':'Nuevo auditorio',
-        'user':{
-            'name':'Candido Brandon Mejia ',
-            'picture':'https://picsum.photos/200'
-        },
-        'timestamp': datetime.now().strftime('%b %dth, %y - %H:%M hrs'),
-        'photo':'https://picsum.photos/200/300.webp',
-    }
+"""Posts views."""
 
-]
+# Django
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import CreateView, DetailView, ListView
 
-def list_posts(request):
-    return render(request, 'feed.html', {'posts': posts})
+# Forms
+from posts.forms import PostForm
+
+# Models
+from posts.models import Post
+
+
+class PostsFeedView(LoginRequiredMixin, ListView):
+    """Return all published posts."""
+
+    template_name = 'posts/feed.html'
+    model = Post
+    ordering = ('-created',)
+    paginate_by = 30
+    context_object_name = 'posts'
+
+
+class PostDetailView(LoginRequiredMixin, DetailView):
+    """Return post detail."""
+
+    template_name = 'posts/detail.html'
+    queryset = Post.objects.all()
+    context_object_name = 'post'
+
+
+class CreatePostView(LoginRequiredMixin, CreateView):
+    """Create a new post."""
+
+    template_name = 'posts/new.html'
+    form_class = PostForm
+    success_url = reverse_lazy('posts:feed')
+
+    def get_context_data(self, **kwargs):
+        """Add user and profile to context."""
+        context = super().get_context_data(**kwargs)
+        context['user'] = self.request.user
+        context['profile'] = self.request.user.profile
+        return context
